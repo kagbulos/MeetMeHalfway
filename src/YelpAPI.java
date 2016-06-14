@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,10 +30,11 @@ public class YelpAPI {
 
 	private static final String API_HOST = "api.yelp.com";
 	private static String DEFAULT_TERM;
-	private static String DEFAULT_LOCATION;;
-	private static final int SEARCH_LIMIT = 3;
+	private static String DEFAULT_LOCATION;
+	private static int SEARCH_LIMIT;
 	private static final String SEARCH_PATH = "/v2/search";
 	private static final String BUSINESS_PATH = "/v2/business";
+	private static boolean fullPrint;
 
 	/*
 	 * Update OAuth credentials below from the Yelp Developers API site:
@@ -121,7 +124,7 @@ public class YelpAPI {
 	 * @return <tt>String</tt> body of API response
 	 */
 	private String sendRequestAndGetResponse(OAuthRequest request) {
-		System.out.println("Querying " + request.getCompleteUrl() + " ...");
+		if(fullPrint){ System.out.println("Querying " + request.getCompleteUrl() + " ..."); }
 		this.service.signRequest(this.accessToken, request);
 		Response response = request.send();
 		return response.getBody();
@@ -150,6 +153,8 @@ public class YelpAPI {
 		}
 
 		JSONArray businesses = (JSONArray) response.get("businesses");
+		
+		if(fullPrint) {
 		JSONObject firstBusiness = (JSONObject) businesses.get(0);
 		String firstBusinessID = firstBusiness.get("id").toString();
 		System.out.println(String.format("%s businesses found, querying business info for the top result \"%s\" ...",
@@ -159,6 +164,13 @@ public class YelpAPI {
 		String businessResponseJSON = yelpApi.searchByBusinessId(firstBusinessID.toString());
 		System.out.println(String.format("Result for business \"%s\" found:", firstBusinessID));
 		System.out.println(businessResponseJSON);
+		}
+		
+		// print out a list of the top places
+		for(Object business : businesses) {
+			System.out.println("***************");
+			System.out.println(((JSONObject) business).get("name").toString());
+		}
 	}
 
 	/**
@@ -172,9 +184,11 @@ public class YelpAPI {
 		public String location = DEFAULT_LOCATION;
 	}
 
-	public void run(String defaultTerm, String defaultLocation) {
+	public void run(String defaultTerm, String defaultLocation, int searchLimit, boolean fullprint) {
 		setDefaultTerm(defaultTerm);
 		setDefaultLocation(defaultLocation);
+		setSearchLimit(searchLimit);
+		setFullPrint(fullPrint);
 		YelpAPICLI yelpApiCli = new YelpAPICLI();
 
 		YelpAPI yelpApi = new YelpAPI();
@@ -187,5 +201,13 @@ public class YelpAPI {
 
 	public void setDefaultLocation(String defaultLocation) {
 		DEFAULT_LOCATION = defaultLocation;
+	}
+	
+	public void setSearchLimit(int searchLimit) {
+		SEARCH_LIMIT = searchLimit;
+	}
+	
+	public void setFullPrint(boolean fp) {
+		fullPrint = fp;
 	}
 }

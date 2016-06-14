@@ -18,6 +18,7 @@ public class MeetMeHalfway {
 	private static GoogleResponse location2 = null;
 	private static boolean fullPrint = false;
 	private static String term;
+	private static int limit;
 
 	private GoogleResponse convertToLatLong(String fullAddress) throws IOException {
 		URL url = new URL(URL + "?address=" + URLEncoder.encode(fullAddress, "UTF-8") + "&sensor=false");
@@ -49,6 +50,7 @@ public class MeetMeHalfway {
 		options.addOption("arg2", true, "location of second place");
 		options.addOption("fp", false, "full print of all debug sections");
 		options.addOption("term", true, "type of place we are looking for");
+		options.addOption("lim", true, "number of items you want to return from search");
 		
 		CommandLineParser parser = new DefaultParser();
 		
@@ -72,6 +74,9 @@ public class MeetMeHalfway {
 			}
 			if (cmd.hasOption("fp")) {
 				fullPrint = true;
+			}
+			if (cmd.hasOption("lim")) {
+				limit = Integer.parseInt(cmd.getOptionValue("lim"));
 			}
 			
 		} catch (ParseException e) {
@@ -114,11 +119,11 @@ public class MeetMeHalfway {
 					System.out.println("address is :" + result.getFormatted_address());
 				}
 			} else {
-				System.out.println(midPointResp.getStatus());
+				//System.out.println(midPointResp.getStatus());
 			}
 		}
 
 		YelpAPI yelpAPI = new YelpAPI();
-		yelpAPI.run(term, midPointResp.getResults()[1].getFormatted_address());
+		yelpAPI.run(term, midPointResp.getResults()[1].getFormatted_address(), limit, fullPrint);
 	}
 }
